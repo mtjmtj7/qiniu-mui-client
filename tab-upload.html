@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<style type="text/css">
+			#buckets{
+				color: #999;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">空间</h1>
+			<a class="mui-icon mui-icon mui-icon-reload mui-pull-right" href="javascript:location.reload();"></a>
+		</header>
+		<div class="mui-content">
+			<div class="mui-card">
+				<!--页眉，放置标题-->
+				<div class="mui-card-header">所有空间</div>
+				<!--内容区-->
+				<div class="mui-card-content">
+					<ul class="mui-table-view" id="buckets">
+					</ul>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script src="js/mui.js"></script>
+	<script src="js/setting.js"></script>
+	<script type="text/javascript">
+		mui.init({  
+		    //监听Android手机的back、menu按键  
+		    keyEventBind: {  
+		        backbutton: false,  //Boolean(默认true)关闭back按键监听  
+		        menubutton: true   //Boolean(默认true)关闭menu按键监听  
+		    },  
+		})
+		
+		
+	</script>
+</html>

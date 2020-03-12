@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link href="css/showLoad.css" rel="stylesheet" />
+		<style type="text/css">
+			#now_server{
+				padding: 15px;
+				color: #999;;
+			}
+			.input_server{
+				padding: 15px;
+			}
+			.input_server button{
+				padding: 5px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">设置</h1>
+		</header>
+		<div class="mui-card" style="margin-top: 50px;">
+			<div class="mui-card-header">当前服务器：</div>
+			<div class="mui-card-content" id="now_server"></div>
+		</div>
+		<div class="mui-card">
+			<div class="mui-card-header">输入新的服务器地址：</div>
+			<div class="mui-card-content input_server">
+				<div class="mui-input-row">
+					<input class="mui-input-clear" type="text" name="input_server" id="input_server" value="" />
+				</div>
+				
+				<button type="button" class="mui-btn mui-btn-blue mui-btn-block" id="save_btn">保存</button>
+			</div>
+		</div>
+	</body>
+	<script src="js/mui.js"></script>
+	<script src="js/showLoading.js"></script>
+	<script type="text/javascript">
+		mui.init({  
+		    //监听Android手机的back、menu按键  
+		    keyEventBind: {  
+		        backbutton: false,  //Boolean(默认true)关闭back按键监听  
+		        menubutton: true   //Boolean(默认true)关闭menu按键监听  
+		    },  
+		})
+		mui.plusReady(function() {
+			
+			//从本地储存中读取服务器配置
+			var server = localStorage.getItem("server")
+			function wrongserver(){
+				mui.hideLoading();//隐藏后的回调函数
+				var str = '<p style="color:red"><span class="servertxt">'+server +'</span><span class="mui-icon mui-icon-closeempty mui-pull-right"></span>'
+				str+='<br>服务器不可用</p>'
+				document.getElementById("now_server").innerHTML = str
+			}
+			if(server == null){
+				server = "http://uee.me/cYqjF"
+				document.getElementById("now_server").innerHTML = '<span class="servertxt">'+server + '</span><span class="mui-pull-right">默认</span>'
+			}
+			else{
+				mui.showLoading("正在检查服务器","div");
+				//检查server是否能用
+				mui.ajax(server,{
+					type:'get',
+					timeout:10000,
+					success:function(data){
+						if(data == 'YES'){
+							//服务器可用
+							mui.hideLoading();//隐藏后的回调函数
+							var str ='<p style="color:green"><span class="servertxt">'+ server +'</span><span class="mui-icon mui-icon-checkmarkempty mui-pull-right"></span></p>'
+							document.getElementById("now_server").innerHTML = str
+						}
+						else{
+							wrongserver()
+						}
+					},
+					error:function(xhr,type,errorThrown){
+						//异常处理；
+						wrongserver()
+					}
+				});
+			}
+			//输入新的server
+			var save_btn = document.getElementById('save_btn')
+			save_btn.addEventListener("tap", function(){
+				var input_server = document.getElementById("input_server").value
+				//检查新的server是否能用
+				mui.showLoading("正在检查新的服务器","div"); 
+				
+				mui.ajax(input_server,{
+					type:'get',
+					timeout:10000,
+					success:function(data){
+						if(data == 'YES'){
+							//服务器可用
+							mui.hideLoading();//隐藏后的回调函数
+							var str ='<p style="color:green"><span class="servertxt">'+ input_server +'</span><span class="mui-icon mui-icon-checkmarkempty mui-pull-right"></span></p>'
+							document.getElementById("now_server").innerHTML = str
+							localStorage.setItem("server", input_server) //保存本地
+						}
+						else{
+							var ss = localStorage.getItem("server")
+							if(server!=null){
+								mui.hideLoading()
+								var str ='<p style="color:green"><span class="servertxt">'+ input_server +'</span><span class="mui-icon mui-icon-checkmarkempty mui-pull-right"></span></p>'
+								document.getElementById("now_server").innerHTML = str
+							}
+							else{
+								plus.nativeUI.toast("输入的服务器不可用。")
+							}
+						}
+					},
+					error:function(xhr,type,errorThrown){
+						//异常处理；
+						mui.hideLoading();//隐藏后的回调函数
+						var ss = localStorage.getItem("server")
+						plus.nativeUI.toast("输入的服务器不可用。")
+					}
+				});
+			});
+			//点击复制
+			function setCopyText(txt) {
+				if(!window.plus) return;//判断当前环境是否为手机
+				if(mui.os.android) {//当前手机系统为android
+					var Context = plus.android.importClass("android.content.Context");//导入Java类对象
+					var main = plus.android.runtimeMainActivity();//获取应用主Activity(界面载体，原生应用是由很多个Activity所构成，而混合APP则是只有一个Activity 通过webview来实现app内容)实例对象
+					var clip = main.getSystemService(Context.CLIPBOARD_SERVICE);
+				    plus.android.invoke(clip,"setText",txt);
+				} else {//ios系统
+					var UIPasteboard  = plus.ios.importClass("UIPasteboard");//导入Objective-C类对象
+					var generalPasteboard = UIPasteboard.generalPasteboard();//获得ios粘贴板
+					generalPasteboard.setValueforPasteboardType(txt,"public.utf8-plain-text");//往粘贴板中写入数据
+				}
+			}
+			
+			var lii = document.getElementById("now_server")
+			lii.addEventListener("tap", function(){
+				var txtsp = lii.getElementsByClassName("servertxt")
+				var s = txtsp[0].innerHTML
+				setCopyText(s)
+				plus.nativeUI.toast("链接已复制到剪切板")
+			})
+		});
+		
+	</script>
+</html>

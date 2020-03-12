@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link href="css/showLoad.css" rel="stylesheet" />
+		<style type="text/css">
+			.list{
+				color: #999;
+				font-size: 16px;
+			}
+			.imgg{
+				margin-right: 10px;
+				width: 25px;
+				height: 25px;
+			}
+			.file_l{
+				float: left;
+			}
+			.file_r{
+				float: right;
+				color: #999;
+				font-size: 16px;
+				white-space:normal;
+				word-break : break-all;
+				word-wrap: break-word;
+			}
+			.preview_img{
+				width: 100%;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">文件详情</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-card">
+				<div class="mui-card-header" id="header"></div>
+				<div class="mui-card-content">
+					<ul class="mui-table-view" id="file_content">
+					</ul>
+				</div>
+				<div class="mui-card-footer" id="footer">
+					<button type="button" class="mui-btn mui-btn-danger" id="delete_btn">删除</button>
+					<button type="button" class="mui-btn mui-btn-primary mui-btn-outlined" id="down_btn">下载</button>
+				</div>
+			</div>
+			
+			<div class="mui-card" id="preview">
+			</div>
+		</div>
+		<script src="js/mui.js"></script>
+		<script src="js/file.js"></script>
+		<script src="js/showLoading.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+			  gestureConfig:{
+			   tap: true, //默认为true
+			   doubletap: true, //默认为false
+			   longtap: true, //默认为false
+			   swipe: false, //默认为true
+			   drag: false, //默认为true
+			   hold:false,//默认为false，不监听
+			   release:false//默认为false，不监听
+			  }
+			});
+			mui.plusReady(function(){
+				var self = plus.webview.currentWebview();
+				var filename = self.filename
+				var bucket_name = self.bucket_name
+				var server = localStorage.getItem("server")
+				var sr = ''
+				mui.ajax(server+'/getByKey',{
+					data:{
+						bucket: bucket_name,
+						key: filename
+					},
+					type:'post',//HTTP请求类型
+					success:function(data){
+						mui.hideLoading()
+						var header = 'Bucket: <span class="file_c">'+bucket_name+"</span>"
+						document.getElementById("header").innerHTML = header
+						var str = ''
+						var size = data['fsize']
+						if(parseInt(size/1024) == 0 ){
+							//B
+							data['fsize'] = size+"B"
+						}
+						else if(parseInt(size/1024/1024) == 0 ){
+							//KB
+							data['fsize'] = (size/1024).toFixed(2)+"KB"
+						}
+						else if(parseInt(size/1024/1024/1024) == 0 ){
+							//MB
+							data['fsize'] = (size/1024/1024).toFixed(2)+"MB"
+						}
+						else{
+							//GB
+							data['fsize'] = (size/1024/1024/1024).toFixed(2)+"GB"
+						}
+						for (let p in data) {
+							if(p!='endUser'){
+								str+='<li class="mui-table-view-cell"><span class="file_l">'+p+': </span><span  class="file_r" style="margin-left:10px">'+data[p]+'</span></li>'	
+							}
+							
+						}
+						document.getElementById("file_content").innerHTML = str
+						
+						var filetype = data['mimeType'].split("/")[0]
+						if(filetype == "image"){
+							sr = "http://media.mtjmtj7.cn/"+data['key']
+							document.getElementById("preview").innerHTML = '<img class="preview_img" src='+sr+'>'
+						}
+					}
+				});
+				function setCopyText(txt) {
+					if(!window.plus) return;//判断当前环境是否为手机
+					if(mui.os.android) {//当前手机系统为android
+						var Context = plus.android.importClass("android.content.Context");//导入Java类对象
+						var main = plus.android.runtimeMainActivity();//获取应用主Activity(界面载体，原生应用是由很多个Activity所构成，而混合APP则是只有一个Activity 通过webview来实现app内容)实例对象
+						var clip = main.getSystemService(Context.CLIPBOARD_SERVICE);
+					    plus.android.invoke(clip,"setText",txt);
+					} else {//ios系统
+						var UIPasteboard  = plus.ios.importClass("UIPasteboard");//导入Objective-C类对象
+						var generalPasteboard = UIPasteboard.generalPasteboard();//获得ios粘贴板
+						generalPasteboard.setValueforPasteboardType(txt,"public.utf8-plain-text");//往粘贴板中写入数据
+					}
+				}
+				//双击key列下载
+				mui("ul").on('doubletap','li',function(e){
+					
+					var txt = "http://media.mtjmtj7.cn/"+filename
+					setCopyText(txt)
+					plus.nativeUI.toast("链接已复制到剪切板")
+				})
+				//下载按钮
+				var down_btn = document.getElementById("down_btn");
+				down_btn.addEventListener("tap",function () {
+					//下载
+					var url = sr
+					var dtask = plus.downloader.createDownload( url, {}, function(d, status){
+						if ( status == 200 )	plus.nativeUI.toast("下载成功")
+						else{
+							alert( "下载失败" + status); 
+							plus.downloader.clear();        //清除下载任务
+						}
+					});
+					dtask.start();  
+				});
+				
+				
+				
+			});
+		</script>
+	</body>
+
+</html>
