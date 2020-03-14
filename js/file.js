@@ -4,6 +4,7 @@ mui.plusReady(function() {
 	//展示文件列表
 	mui.showLoading("正在查询中", "div")
 	var bucket = 'mtjmtj7'
+	var list = null;
 	mui.ajax(server+'/getBucketFileList',{
 		data:{
 			bucket: bucket
@@ -13,6 +14,7 @@ mui.plusReady(function() {
 			mui.hideLoading()
 			var ul_dom = document.getElementById(bucket+"_ul")
 			var str=''
+			list = data
 			for (var i = 0; i < data.length-1; i++)
 			{
 				var img = ''
@@ -21,22 +23,25 @@ mui.plusReady(function() {
 				else if(data[i].mimeType == 'video') img = '<img class="imgg" src="img/video.jpg">'
 				else if(data[i].mimeType == 'application') img = '<img class="imgg" src="img/application.jpg">'
 				else img = '<img class="imgg" src="http://media.mtjmtj7.cn/'+data[i].key+'">'
-				str +='<li class="mui-table-view-cell" data="'+data[i].key+'">'+img+'<span>'+data[i].key+'</span></li>'
+				str +='<li class="mui-table-view-cell" data="'+i+'">'+img+'<span>'+data[i].key+'</span></li>'
 			}
 			ul_dom.innerHTML=str
 			
 			//点击查看详情
 			mui("#mtjmtj7_ul").on('tap','li',function(){
-				var key = this.getAttribute("data")
-				var bucket_name = 'mtjmtj7'
+				var i = this.getAttribute("data")
+				var file = list[i]
 				 mui.openWindow({
 					url: 'file.html', 
 					id:'tab-file',	//本页面ID
 					extras:{
-						filename: key,
-						bucket_name: bucket_name
+						bucket: bucket,
+						key: file.key,
+						hash: file.hash,
+						fsize: file.fsize,
+						mimeType: file.mimeType,
+						putTime: file.putTime
 					}
-					
 				  });
 			})
 			//长按复制链接

@@ -8,30 +8,35 @@
 		<link href="css/mui.css" rel="stylesheet" />
 		<link href="css/showLoad.css" rel="stylesheet" />
 		<style type="text/css">
-			.list{
+			.list {
 				color: #999;
 				font-size: 16px;
 			}
-			.imgg{
+
+			.imgg {
 				margin-right: 10px;
 				width: 25px;
 				height: 25px;
 			}
-			.file_l{
+
+			.file_l {
 				float: left;
 			}
-			.file_r{
+
+			.file_r {
 				float: right;
 				color: #999;
 				font-size: 16px;
-				white-space:normal;
-				word-break : break-all;
+				white-space: normal;
+				word-break: break-all;
 				word-wrap: break-word;
 			}
-			.preview_img{
+
+			.preview_img {
 				width: 100%;
 			}
-			#process{
+
+			#process {
 				margin: 5px auto;
 				height: 10px;
 			}
@@ -82,122 +87,134 @@
 		<script src="js/showLoading.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			mui.init({
-			  gestureConfig:{
-			   tap: true, //默认为true
-			   doubletap: true, //默认为false
-			   longtap: true, //默认为false
-			   swipe: false, //默认为true
-			   drag: false, //默认为true
-			   hold:false,//默认为false，不监听
-			   release:false//默认为false，不监听
-			  }
+				gestureConfig: {
+					tap: true, //默认为true
+					doubletap: true, //默认为false
+					longtap: true, //默认为false
+					swipe: false, //默认为true
+					drag: false, //默认为true
+					hold: false, //默认为false，不监听
+					release: false //默认为false，不监听
+				}
 			});
-			mui.plusReady(function(){
-				
+			mui.plusReady(function() {
+
 				var self = plus.webview.currentWebview();
-				var filename = self.filename
-				var bucket_name = self.bucket_name
+				var bucket_name = self.bucket
 				var server = localStorage.getItem("server")
-				var sr = ''
+				var key = self.key
+				var hash = self.hash
+				var fsize = translate_size(self.fsize)
+				var mimeType = self.mimeType
+				var putTime = self.putTime
 				var dtask = null
-				mui.ajax(server+'/getByKey',{
-					data:{
-						bucket: bucket_name,
-						key: filename
-					},
-					type:'post',//HTTP请求类型
-					success:function(data){
-						mui.hideLoading()
-						var header = 'Bucket: <span class="file_c">'+bucket_name+"</span>"
-						inner("header",header)
-						var str = ''
-						var size = data['fsize']
-						data['fsize'] = translate_size(size)
-						for (let p in data) {
-							if(p!='endUser'){
-								str+='<li class="mui-table-view-cell"><span class="file_l">'+p+': </span><span  class="file_r" style="margin-left:10px">'+data[p]+'</span></li>'	
-							}
-							
-						}
-						inner("file_content", str)
-						var filetype = data['mimeType'].split("/")[0]
-						sr = "http://media.mtjmtj7.cn/"+data['key']
-						if(filetype == "image"){
-							var str = '<img class="preview_img" src="'+sr+'">'
-							inner("preview", str)
-						}
-						//监听下载状态
-						var id=localStorage.getItem(filename)
-						plus.downloader.enumerate(function(tasks){
-							for (var i = 0; i < tasks.length; i++) {
-								if(tasks[i].id == id){
-									dtask = tasks[i]
-									dtask.addEventListener("statechanged", function(){
-										var p = (dtask.downloadedSize/dtask.totalSize*100).toFixed(2)
-										mui(process).progressbar().setProgress(p);
-										var str = "继续下载："+p+"%"
-										inner("process_txt", str)
-										if(dtask.state == 4){
-											 toast("下载完成")
-											 localStorage.removeItem(filename)
-										}
-									})
-									dtask.start()
+				var sr = '' //外链
+				//渲染列表
+
+				mui.hideLoading()
+				var header = 'Bucket: <span class="file_c">' + bucket_name + "</span>"
+				inner("header", header)
+				var str = ''
+				//key
+				str +=
+					'<li class="mui-table-view-cell"><span class="file_l">文件名: </span><span  class="file_r" style="margin-left:10px">' +
+					key + '</span></li>'
+				//Hash
+				str +=
+					'<li class="mui-table-view-cell"><span class="file_l">Hash: </span><span  class="file_r" style="margin-left:10px">' +
+					hash + '</span></li>'
+				//fsize
+				str +=
+					'<li class="mui-table-view-cell"><span class="file_l">大小: </span><span  class="file_r" style="margin-left:10px">' +
+					fsize + '</span></li>'
+				//mimeType
+				str +=
+					'<li class="mui-table-view-cell"><span class="file_l">类型: </span><span  class="file_r" style="margin-left:10px">' +
+					mimeType + '</span></li>'
+				//putTime
+				str +=
+					'<li class="mui-table-view-cell"><span class="file_l">上传时间: </span><span  class="file_r" style="margin-left:10px">' +
+					putTime + '</span></li>'
+
+
+
+				inner("file_content", str)
+				var filetype = mimeType.split("/")[0]
+				sr = "http://media.mtjmtj7.cn/" + key
+				if (filetype == "image") {
+					var str = '<img class="preview_img" src="' + sr + '">'
+					inner("preview", str)
+				}
+				//监听下载状态
+				var id = localStorage.getItem(key)
+				plus.downloader.enumerate(function(tasks) {
+					for (var i = 0; i < tasks.length; i++) {
+						if (tasks[i].id == id) {
+							dtask = tasks[i]
+							dtask.addEventListener("statechanged", function() {
+								var p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
+								mui(process).progressbar().setProgress(p);
+								var str = "继续下载：" + p + "%"
+								inner("process_txt", str)
+								if (dtask.state == 4) {
+									toast("下载完成")
+									localStorage.removeItem(key)
 								}
-								else dtask=null
-							}
-						});
+							})
+							dtask.start()
+						} else dtask = null
 					}
 				});
+
 				//双击key列复制
-				mui("ul").on('doubletap','li',function(e){
-					var txt = "http://media.mtjmtj7.cn/"+filename
+				mui("ul").on('doubletap', 'li', function(e) {
+					var txt = "http://media.mtjmtj7.cn/" + key
 					setCopyText(txt)
 					toast("链接已复制到剪切板")
 				})
 				//下载按钮
 				var down_btn = document.getElementById("down_btn");
-				down_btn.addEventListener("tap",function () {
+				down_btn.addEventListener("tap", function() {
 					//下载
 					// 是否已下载
-					if(dtask!=null){
+					if (dtask != null) {
 						alert("下载已存在")
-					}
-					else{
+					} else {
 						dtask = createDownload(sr)
 						var process = document.getElementById("process")
-						dtask.addEventListener("statechanged", function(){
+						dtask.addEventListener("statechanged", function() {
 							var p = 0;
-							p = (dtask.downloadedSize/dtask.totalSize*100).toFixed(2)
-							mui(process).progressbar().setProgress(p);
-							var str = "正在下载："+p+"%"
-							inner("process_txt", str)
-							if(dtask.state == 4){
-								 toast("下载完成")
-								 localStorage.removeItem(filename)
+							if (dtask.state == 3) {
+								p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
+								mui(process).progressbar().setProgress(p);
+								var str = "正在下载：" + p + "%"
+								inner("process_txt", str)
+							}
+							else if (dtask.state == 4) {
+								toast("下载完成")
+								localStorage.removeItem(key)
 							}
 						}, false);
-						dtask.start(); 
-						localStorage.setItem(filename, dtask.id)
+						dtask.start();
+						localStorage.setItem(key, dtask.id)
 					}
 				});
 				//取消任务
 				var cancel_btn = document.getElementById("cancel_btn")
-				cancel_btn.addEventListener("tap",function () {
+				cancel_btn.addEventListener("tap", function() {
 					//取消下载
-					if(dtask==null){
+					if (dtask == null) {
 						toast("当前文件没有下载任务")
-					}
-					else{
+					} else {
 						abortDownload(dtask)
-						dtask=null
+						dtask = null
 						toast("已取消")
 						mui(process).progressbar().setProgress(0);
 						inner("process_txt", '')
-						localStorage.removeItem(filename)
+						localStorage.removeItem(key)
 					}
 				});
-				
+
 			});
 		</script>
 	</body>
