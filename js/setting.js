@@ -45,25 +45,9 @@ function bucket_size(bucket_name){
 		success:function(data){
 			var size = data[data.length-1].fsize
 			//换算大小
-			if(parseInt(size/1024/1024) == 0){
-				//KB
-				var s = "共"+(data.length-1)+"个文件/"
-				s += (size/1024).toFixed(2)+"KB"
-				document.getElementById(bucket_name).innerHTML = s;
-			}
-			else if(parseInt(size/1024/1024/1024) == 0){
-				//MB
-				var s = "共"+(data.length-1)+"个文件/"
-				s += (size/1024/1024).toFixed(2)+"MB"
-				document.getElementById(bucket_name).innerHTML = s;
-			}
-			else{
-				//GB  免费就10G...
-				var s = "共"+(data.length-1)+"个文件/"
-				s += (size/1024/1024/1024).toFixed(2)+"GB"
-				document.getElementById(bucket_name).innerHTML = s;
-			}
-			
+			var s = "共"+(data.length-1)+"个文件/"
+			s+=translate_size(size)
+			inner(bucket_name, s)
 		}
 	})
 }

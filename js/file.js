@@ -40,21 +40,7 @@ mui.plusReady(function() {
 				  });
 			})
 			//长按复制链接
-			
-			function setCopyText(txt) {
-				if(!window.plus) return;//判断当前环境是否为手机
-				if(mui.os.android) {//当前手机系统为android
-					var Context = plus.android.importClass("android.content.Context");//导入Java类对象
-					var main = plus.android.runtimeMainActivity();//获取应用主Activity(界面载体，原生应用是由很多个Activity所构成，而混合APP则是只有一个Activity 通过webview来实现app内容)实例对象
-					var clip = main.getSystemService(Context.CLIPBOARD_SERVICE);
-					plus.android.invoke(clip,"setText",txt);
-				} else {//ios系统
-					var UIPasteboard  = plus.ios.importClass("UIPasteboard");//导入Objective-C类对象
-					var generalPasteboard = UIPasteboard.generalPasteboard();//获得ios粘贴板
-					generalPasteboard.setValueforPasteboardType(txt,"public.utf8-plain-text");//往粘贴板中写入数据
-				}
-			}
-			mui(".ul_panel").on('doubletap','li',function(e){
+			mui(".ul_panel").on('longtap','li',function(e){
 				var key = this.getAttribute("data")
 				var bucket_name = this.parentNode.id.split("_")[0]
 				
@@ -62,6 +48,10 @@ mui.plusReady(function() {
 				setCopyText(txt)
 				plus.nativeUI.toast("链接已复制到剪切板")
 			})
+		},
+		error:function(xhr,type,errorThrown){
+			//异常处理；
+			mui.hideLoading()
 		}
 	})
 		
