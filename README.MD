@@ -54,8 +54,8 @@
 - ~~在下载未完成时新的下载会覆盖上一个 --2020年3月13日18:10:24~~
 - 下载页打开无法自动显示下载列表，刷新后显示  --2020年3月14日16:50:54
 - ~~查看详情待优化~(减少一次查询) --2020年3月14日20:50:47~~~
-- 多文件查看下载进度，来回切换蜜汁bug... --2020年3月14日20:51:34
+- 多文件查看下载进度，来回切换蜜汁bug... --2020年3月14日20:51:34(网络问题![](http://media.mtjmtj7.cn/images/e247.png))
 - 服务器失效后，保存新的可用服务器数据不刷新  --2020年3月15日11:16:32
-- H5+ downloader能多任务下载？？？ --2020年3月15日11:42:27
-- 任务暂停后状态还是3？？？ （科普：http://www.html5plus.org/doc/zh_cn/downloader.html#plus.downloader.DownloadState  --2020年3月15日11:43:45
+- ~~H5+ downloader能多任务下载？？？ --2020年3月15日11:42:27（操作失误<img src="http://media.mtjmtj7.cn/images/kuanghan.png" style="zoom:50%;" />...~~
+- ~~任务暂停后状态还是3？？？ （科普：http://www.html5plus.org/doc/zh_cn/downloader.html#plus.downloader.DownloadState  --2020年3月15日11:43:45~~
 

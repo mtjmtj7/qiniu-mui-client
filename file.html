@@ -151,8 +151,7 @@
 					for (var i = 0; i < tasks.length; i++) {
 						if (tasks[i].id == id) {
 							dtask = tasks[i]
-							dtask.addEventListener("statechanged", function() {
-								log(dtask.state)
+							dtask.addEventListener("statechanged", function(dtask, status) {
 								if (dtask.state == 1) {
 									var str = "正在请求服务器"
 									inner("process_txt", str)
