@@ -152,13 +152,28 @@
 						if (tasks[i].id == id) {
 							dtask = tasks[i]
 							dtask.addEventListener("statechanged", function() {
-								var p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
-								mui(process).progressbar().setProgress(p);
-								var str = "继续下载：" + p + "%"
-								inner("process_txt", str)
-								if (dtask.state == 4) {
+								log(dtask.state)
+								if (dtask.state == 1) {
+									var str = "正在请求服务器"
+									inner("process_txt", str)
+								}
+								else if (dtask.state == 2) {
+									var str = "正在准备下载器"
+									inner("process_txt", str)
+								}
+								else if (dtask.state == 3) {
+									var p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
+									mui(process).progressbar().setProgress(p);
+									var str = "已下载：" + p + "%"
+									inner("process_txt", str)
+								}
+								else if (dtask.state == 4) {
 									toast("下载完成")
 									localStorage.removeItem(key)
+								}
+								else if (dtask.state == 5) {
+									var str = "下载已暂停"
+									inner("process_txt", str)
 								}
 							})
 							dtask.start()
@@ -184,23 +199,37 @@
 						var process = document.getElementById("process")
 						dtask.addEventListener("statechanged", function() {
 							var p = 0;
-							if (dtask.state == 3) {
+							if (dtask.state == 1) {
+								var str = "正在请求服务器"
+								inner("process_txt", str)
+							}
+							else if (dtask.state == 2) {
+								var str = "正在准备下载器"
+								inner("process_txt", str)
+							}
+							else if (dtask.state == 3) {
 								p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
 								mui(process).progressbar().setProgress(p);
-								var str = "正在下载：" + p + "%"
+								var str = "已下载：" + p + "%"
 								inner("process_txt", str)
 							}
 							else if (dtask.state == 4) {
 								toast("下载完成")
 								localStorage.removeItem(key)
 							}
+							else if (dtask.state == 5) {
+								var str = "下载已暂停"
+								inner("process_txt", str)
+							}
 						}, false);
 						dtask.start();
 						localStorage.setItem(key, dtask.id)
 					}
 				});
+				var flag = false
 				//取消任务
 				var cancel_btn = document.getElementById("cancel_btn")
+				var pause_btn = document.getElementById("pause_btn")
 				cancel_btn.addEventListener("tap", function() {
 					//取消下载
 					if (dtask == null) {
@@ -212,6 +241,30 @@
 						mui(process).progressbar().setProgress(0);
 						inner("process_txt", '')
 						localStorage.removeItem(key)
+						flag = false
+						pause_btn.innerHTML = "暂停"
+					}
+				});
+				//暂停下载
+				
+				pause_btn.addEventListener("tap", function() {
+					//暂停下载
+					if(!flag)
+					{
+						if (dtask == null) {
+							toast("当前文件没有下载任务")
+						} else {
+							dtask.pause()
+							toast("已暂停")
+							flag = true
+							pause_btn.innerHTML="继续"
+						}
+					}
+					else{
+						//继续下载
+						dtask.resume()
+						pause_btn.innerHTML="暂停"
+						flag=false
 					}
 				});
 
