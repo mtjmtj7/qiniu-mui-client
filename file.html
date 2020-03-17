@@ -135,9 +135,6 @@
 				str +=
 					'<li class="mui-table-view-cell"><span class="file_l">上传时间: </span><span  class="file_r" style="margin-left:10px">' +
 					putTime + '</span></li>'
-
-
-
 				inner("file_content", str)
 				var filetype = mimeType.split("/")[0]
 				sr = "http://media.mtjmtj7.cn/" + key
@@ -145,13 +142,25 @@
 					var str = '<img class="preview_img" src="' + sr + '">'
 					inner("preview", str)
 				}
+				
+				
 				//监听下载状态
 				var id = localStorage.getItem(key)
+				var st = localStorage.getItem(key+"_status")
 				plus.downloader.enumerate(function(tasks) {
 					for (var i = 0; i < tasks.length; i++) {
 						if (tasks[i].id == id) {
 							dtask = tasks[i]
+							
+							if (st == 'N') {
+								var str = "下载已暂停"
+								flag = true
+								inner("pause_btn", "继续")
+								inner("process_txt", str)
+							}
+							
 							dtask.addEventListener("statechanged", function(dtask, status) {
+								var p = 0;
 								if (dtask.state == 1) {
 									var str = "正在请求服务器"
 									inner("process_txt", str)
@@ -161,22 +170,26 @@
 									inner("process_txt", str)
 								}
 								else if (dtask.state == 3) {
-									var p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
+									p = (dtask.downloadedSize / dtask.totalSize * 100).toFixed(2)
 									mui(process).progressbar().setProgress(p);
 									var str = "已下载：" + p + "%"
 									inner("process_txt", str)
+									localStorage.setItem(key+"_status",'Y')
 								}
 								else if (dtask.state == 4) {
 									toast("下载完成")
 									localStorage.removeItem(key)
+									localStorage.removeItem(key+"_status")
 								}
 								else if (dtask.state == 5) {
 									var str = "下载已暂停"
 									inner("process_txt", str)
+									inner("pause_btn","继续")
+									flag = true
+									localStorage.setItem(key+"_status",'N')
 								}
-							})
-							dtask.start()
-						} else dtask = null
+							}, false);
+						}
 					}
 				});
 
@@ -196,7 +209,7 @@
 					} else {
 						dtask = createDownload(sr)
 						var process = document.getElementById("process")
-						dtask.addEventListener("statechanged", function() {
+						dtask.addEventListener("statechanged", function(dtask, status) {
 							var p = 0;
 							if (dtask.state == 1) {
 								var str = "正在请求服务器"
@@ -211,18 +224,22 @@
 								mui(process).progressbar().setProgress(p);
 								var str = "已下载：" + p + "%"
 								inner("process_txt", str)
+								localStorage.setItem(key+"_status",'Y')
 							}
 							else if (dtask.state == 4) {
 								toast("下载完成")
 								localStorage.removeItem(key)
+								localStorage.removeItem(key+"_status")
 							}
 							else if (dtask.state == 5) {
 								var str = "下载已暂停"
 								inner("process_txt", str)
+								localStorage.setItem(key+"_status",'N')
 							}
 						}, false);
 						dtask.start();
 						localStorage.setItem(key, dtask.id)
+						localStorage.setItem(key+"_status",'Y')
 					}
 				});
 				var flag = false
@@ -237,9 +254,11 @@
 						abortDownload(dtask)
 						dtask = null
 						toast("已取消")
+						location.reload()
 						mui(process).progressbar().setProgress(0);
 						inner("process_txt", '')
 						localStorage.removeItem(key)
+						localStorage.removeItem(key+"_status",'N')
 						flag = false
 						pause_btn.innerHTML = "暂停"
 					}
@@ -254,16 +273,20 @@
 							toast("当前文件没有下载任务")
 						} else {
 							dtask.pause()
+							dtask.state=5
 							toast("已暂停")
 							flag = true
 							pause_btn.innerHTML="继续"
+							localStorage.setItem(key+"_status",'N')
 						}
 					}
 					else{
 						//继续下载
 						dtask.resume()
+						console.log(dtask.state)
 						pause_btn.innerHTML="暂停"
 						flag=false
+						localStorage.setItem(key+"_status",'Y')
 					}
 				});
 
