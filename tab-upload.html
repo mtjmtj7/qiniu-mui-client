@@ -29,10 +29,44 @@
 				</div>
 			</div>
 		</div>
+		<div class="mui-content" style="margin-top: -50px;">
+			<div class="mui-card">
+				<!--页眉，放置标题-->
+				<div class="mui-card-header">文件夹</div>
+				<!--内容区-->
+				<div class="mui-card-content" style="padding: 10px;">
+					<div class="mui-input-row">
+						<input type="text" class="mui-input-clear" id="folder" value="images" placeholder="输入文件夹">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mui-content" style="margin-top: -50px;">
+			<div class="mui-card">
+				<!--页眉，放置标题-->
+				<div class="mui-card-header">远程抓取</div>
+				<!--内容区-->
+				<div class="mui-card-content" style="padding: 10px;">
+					<div class="mui-input-row">
+						<input type="text" class="mui-input-clear" id="remoteUrl" placeholder="输入地址">
+					</div>
+					<div class="mui-input-row">
+						<input type="text" class="mui-input-clear" id="ext" placeholder="输入后缀名">
+					</div>
+					<button class="mui-btn mui-btn-primary mui-btn-block" id="remoteBtn" style="padding: 5px; margin-top: 10px;">立即上传</button>
+				</div>
+			</div>
+		</div>
+		<img id="preview" width="100%"/>
 	</body>
 	<script src="js/mui.js"></script>
 	<script src="js/setting.js"></script>
 	<script src="js/myutil.js"></script>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/plupload.full.min.js"></script>
+	<script src="js/qiniu.min.js"></script>
+	<script src="js/showLoading.js" type="text/javascript" charset="utf-8"></script>
+	
 	<script type="text/javascript">
 		mui.init({  
 		    //监听Android手机的back、menu按键  
@@ -41,7 +75,30 @@
 		        menubutton: true   //Boolean(默认true)关闭menu按键监听  
 		    },  
 		})
-		
+		mui.plusReady(function() {
+			var searchBtn = document.getElementById("remoteBtn")
+			remoteBtn.addEventListener('tap', function(){
+				var url = document.getElementById("remoteUrl").value
+				document.getElementById("preview").setAttribute("src", url)
+				var ext = document.getElementById("ext").value
+				var folder = document.getElementById("folder").value
+				mui.ajax(server+'/getUrl',{
+					data:{
+						url: url,
+						ext: ext,
+						folder:folder
+					},
+					type:'post',
+					beforeSend:function(){
+						plus.nativeUI.toast("正在抓取...")
+					},
+					success:function(data){
+						d = JSON.parse(data)
+						alert(d.msg)
+					},
+				})
+			})
+		})
 		
 	</script>
 </html>
